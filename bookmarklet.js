@@ -1,4 +1,4 @@
-(function(){
+javascript:(function(){
 
 function extrairExames(texto) {
   texto = texto.replace(/\r\n|\n|\t/g, ' ');
@@ -10,7 +10,7 @@ function extrairExames(texto) {
     HEMOGLOBINA: /Hemoglobina\s*\.{0,}\s*[:]*\s*([0-9.,]+)/i,
     LEUCÓCITOS: /Leuc[óo]citos\s*\.{0,}\s*[:]*\s*([0-9.,]+)/i,
     PLAQUETAS: /Plaquetas\s*\.{0,}\s*[:]*\s*([0-9.,]+)/i,
-    NEUTRÓFILOS: /Neutrófilos\s*\.{0,}\s*[:]*\s*([0-9.,]+)/i,
+    NEUTRÓFILOS: /Neutr[óo]filos\s*\.{0,}\s*[:]*\s*([0-9.,]+)/i,
     LINFÓCITOS: /Linf[óo]citos\s*\.{0,}\s*[:]*\s*([0-9.,]+)/i
   };
 
@@ -30,8 +30,7 @@ function extrairExames(texto) {
     pCO2: /pCO2\s*[:]*\s*([0-9.,]+)/i,
     pO2: /pO2\s*[:]*\s*([0-9.,]+)/i,
     HCO3: /HCO3\s*[:]*\s*([0-9.,]+)/i,
-    BE: /BE\s*(?:\(Excesso de Base\))?\s*[:]*\s*([-\d.,]+)/i,
-    ctCO2: /ctCO2\s*[:]*\s*([0-9.,]+)/i,
+    BE: /BE\s*(?:\(Excesso de Base\))?\s*[:]*\s*(-?\s*\d+[.,]?\d*)/i,
     SO2: /SO2\s*[:]*\s*([0-9.,]+)/i,
     Lactato: /Lactato\s*[:]*\s*([0-9.,]+)/i
   };
@@ -53,8 +52,9 @@ function extrairExames(texto) {
   }
 
   const regexOutros = {
+
     'CÁLCIO TOTAL': /C[áa]lcio Total\s*Valor de referência\s*Resultado\s*[:]*\s*([0-9.,]+)/i,
-    'CREATININA': /CREATININA\s*RESULTADO\s*[:]*\s*([0-9.,]+)/i,
+    'CREATININA': /CREATININA\s*Resultado\s*[:]*\s*([0-9.,]+)/i,
     'FÓSFORO SÉRICO': /F[óo]sforo S[ée]rico\s*Valor de referência\s*Resultado\s*[:]*\s*([0-9.,]+)/i,
     'MAGNESIO': /MAGNESIO\s*Valor de referência\s*Resultado\s*[:]*\s*([0-9.,]+)/i,
     'POTASSIO SÉRICO': /POTASSIO S[ée]rico\s*Valor de referência\s*Resultado\s*[:]*\s*([0-9.,]+)/i,
@@ -62,6 +62,15 @@ function extrairExames(texto) {
     'SÓDIO SÉRICO': /S[óo]dio S[ée]rico\s*Valor de referência\s*Resultado\s*[:]*\s*([0-9.,]+)/i,
     'UREIA': /UREIA\s*Valor de referência\s*Resultado\s*[:]*\s*([0-9.,]+)/i,
     'CÁLCIO IÔNICO': /C[áa]lcio I[oô]nico\s*[:]*\s*([0-9.,]+)/i,
+    'TGP': /ALANINA AMINOTRANSFERASE.*?Resultado:\s*([0-9.,]+)/i,
+    'TGO': /ASPARTATO AMINOTRANSFERASE.*?Resultado:\s*([0-9.,]+)/i,
+    'ALBUMINA': /ALBUMINA\s*Valor de referência\s*Resultado:\s*([0-9.,]+)/i,
+    'AMILASE': /AMILASE\s*Valor de referência\s*Resultado:\s*([0-9.,]+)/i,
+    'GAMA GT': /GAMA-GLUTAMILTRANSFERASE.*?Resultado:\s*([0-9.,]+)/i,
+    'FOSFATASE ALCALINA': /FOSFATASE ALCALINA\s*Valor de referência\s*Resultado:\s*([0-9.,]+)/i,
+    'TP': /Tempo Paciente:\s*([0-9.,]+)/i,
+    'INR': /INR:\s*([0-9.,]+)/i,
+    'TTPA': /Rela[çc][ãa]o paciente\/normal:\s*([0-9.,]+)/i
   };
 
   for (const [key, regex] of Object.entries(regexOutros)) {
@@ -72,11 +81,46 @@ function extrairExames(texto) {
   return resultado.join(' // ');
 }
 
+function abreviarExames(texto){
+
+const mapa = {
+
+'HEMOGLOBINA':'Hb',
+'LEUCÓCITOS':'Leuco',
+'PLAQUETAS':'Plq',
+'NEUTRÓFILOS':'Neutro',
+'LINFÓCITOS':'Linfo',
+'ALBUMINA':'ALB',
+'CREATININA':'Cr',
+'UREIA':'Ur',
+'SÓDIO SÉRICO':'Na',
+'POTASSIO SÉRICO':'K',
+'PROTEINA C REATIVA':'PCR',
+'CÁLCIO TOTAL':'Ca TOT',
+'GAMA GT':'Gama-GT',
+'FOSFATASE ALCALINA':'FA',
+'BILIRRUBINA TOTAL':'BT',
+'BILIRRUBINA DIRETA':'BD',
+'BILIRRUBINA INDIRETA':'BI',
+'FÓSFORO SÉRICO':'P',
+'MAGNESIO: ':'Mg',
+'CÁLCIO IÔNICO':'Ca ion',
+
+};
+
+for (const [original, curto] of Object.entries(mapa)) {
+  const regex = new RegExp(original, 'g');
+  texto = texto.replace(regex, curto);
+}
+
+return texto;
+
+}
 
 async function obterTextoPDF() {
 
   if (!window.PDFViewerApplication) {
-    alert("PDFViewerApplication não encontrado. Abra o PDF no visualizador do navegador.");
+    alert("PDFViewerApplication não encontrado.");
     return;
   }
 
@@ -100,7 +144,7 @@ async function obterTextoPDF() {
   const resultado = extrairExames(texto);
 
   if (resultado) {
-    alert(resultado);
+    alert(abreviarExames(resultado));
   } else {
     alert("Nenhum exame encontrado.");
   }
